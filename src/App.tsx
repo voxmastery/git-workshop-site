@@ -1,20 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { EVENT } from './data/event';
-import { FrameScrubber } from './features/scrub/FrameScrubber';
+import { CssTicket } from './features/ticket/CssTicket';
 import { QrTicket } from './features/ticket/QrTicket';
 import { TicketForm } from './features/ticket/TicketForm';
 import { createAuth } from './lib/auth';
 import { createBackend, type Registration } from './lib/registrations';
 import { progressForRect } from './lib/scrub';
 import { EMPTY_REGISTRATION, type RegistrationInput } from './lib/validation';
+import './features/ticket/ticket.css';
 
-const FRAME_COUNT = 169; // 24 fps frames of ticket-unfold.mp4
-const FRAME_W = 540;
-const FRAME_H = 960;
-const FORM_AT = 0.9; // scroll progress at which the form appears on the open ticket (unfold is done by ~0.5)
-const SCRUB_EASE = 0.14; // per-frame easing toward the scroll target; lower = smoother, laggier
-const DROP_NO_DATA_MS = 2500; // if the drop clip has no data by then, use the CSS flash instead
-const DROP_HARD_CAP_MS = 8000; // never sit on the drop step longer than this
+const OPEN_END = 0.55; // scroll progress at which the ticket is fully unfolded
+const FORM_AT = 0.6; // the form becomes usable a touch after it is open
+const SCRUB_EASE = 0.16;
+const DROP_NO_DATA_MS = 2500;
+const DROP_HARD_CAP_MS = 8000;
 
 type Phase = 'scrub' | 'submitting' | 'dropping' | 'ticket';
 
@@ -32,7 +30,7 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-/** Scroll progress of the track, eased every animation frame so the scrub glides instead of stepping. */
+/** Scroll progress of the track, eased per elapsed time so the fold glides at any frame rate. */
 function useSmoothScrollProgress(track: React.RefObject<HTMLDivElement | null>, reduced: boolean) {
   const [progress, setProgress] = useState(0);
   const target = useRef(0);
@@ -44,7 +42,6 @@ function useSmoothScrollProgress(track: React.RefObject<HTMLDivElement | null>, 
       if (!el) return;
       const r = el.getBoundingClientRect();
       target.current = progressForRect(r.top, r.height, window.innerHeight);
-      // Background tabs get no animation frames: snap so the state never falls behind the scroll.
       if (document.visibilityState !== 'visible') {
         current.current = target.current;
         setProgress(target.current);
@@ -57,10 +54,9 @@ function useSmoothScrollProgress(track: React.RefObject<HTMLDivElement | null>, 
     let raf = 0;
     let last = performance.now();
     const tick = (now: number) => {
-      const dt = Math.min(100, now - last); // ms since last frame, capped so a stalled tab does not jump
+      const dt = Math.min(100, now - last);
       last = now;
       const diff = target.current - current.current;
-      // frame-rate independent easing: same feel at 30, 60 or 120 fps
       const k = 1 - Math.pow(1 - SCRUB_EASE, dt / 16.7);
       if (reduced || Math.abs(diff) < 0.0008) current.current = target.current;
       else current.current += diff * k;
@@ -90,6 +86,26 @@ export default function App() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [dropFailed, setDropFailed] = useState(false);
   const dropVideo = useRef<HTMLVideoElement>(null);
+  const [signingIn, setSigningIn] = useState(false);
+  const [signInError, setSignInError] = useState<string | null>(null);
+  const ticketEl = useRef<HTMLDivElement>(null);
+  const [spacer, setSpacer] = useState(0);
+
+  // The ticket can be taller than the screen: once the fold is done and the sticky stage releases,
+  // this spacer lets the page keep scrolling until the bottom of the form is visible.
+  useEffect(() => {
+    const el = ticketEl.current;
+    if (!el) return;
+    const update = () => setSpacer(Math.max(0, el.getBoundingClientRect().height + 64 + 32 - window.innerHeight));
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [phase]);
 
   // Returning visitor / OAuth redirect: show their saved ticket straight away.
   useEffect(() => {
@@ -135,7 +151,8 @@ export default function App() {
     if (phase === 'ticket') window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [phase]);
 
-  const formVisible = phase === 'scrub' && progress >= FORM_AT;
+  const openness = reduced ? 1 : Math.min(1, progress / OPEN_END);
+  const formOpen = reduced || progress >= FORM_AT;
 
   const submit = useCallback(async () => {
     setPhase('submitting');
@@ -150,9 +167,6 @@ export default function App() {
     }
   }, [form, reduced]);
 
-  /** Landing-page sign-in for people who already have a ticket (new device, cleared session). */
-  const [signingIn, setSigningIn] = useState(false);
-  const [signInError, setSignInError] = useState<string | null>(null);
   const signInExisting = useCallback(async () => {
     setSigningIn(true);
     setSignInError(null);
@@ -180,7 +194,7 @@ export default function App() {
     setSaveError(null);
     try {
       const user = await auth.signInWithGoogle(registration.email);
-      if (!user) return; // real OAuth redirects; the mount effect finishes the claim on return
+      if (!user) return;
       if (user.email !== registration.email) {
         setSaveError(`That Google account (${user.email}) doesn’t match the Gmail on your ticket (${registration.email}). Sign in with the Gmail you used.`);
         await auth.signOut();
@@ -214,31 +228,30 @@ export default function App() {
       )}
 
       {phase !== 'ticket' && (
-        <div className="track" ref={track} style={{ height: '300vh' }}>
-          <div className={`stage phase-${phase}${formVisible ? ' form-visible' : ''}`}>
-            <div className={`frames-wrap${reduced ? '' : ' intro'}`}>
-              <FrameScrubber progress={progress} frameCount={FRAME_COUNT} basePath="/frames/ticket" width={FRAME_W} height={FRAME_H} className="frames" />
+        <div className="track" ref={track} style={{ height: '200vh' }}>
+          <div className={`ct-stage phase-${phase}${formOpen ? ' open' : ''}`}>
+            <div className={`ct-wrap${reduced ? '' : ' intro'}`}>
+              <CssTicket ref={ticketEl} openness={openness} stubName={form.name.trim()}>
+                <TicketForm
+                  value={form}
+                  onChange={setForm}
+                  onSubmit={submit}
+                  disabled={phase === 'submitting' || !formOpen}
+                  serverError={serverError}
+                  extra={
+                    serverError?.includes('already has a ticket') ? (
+                      <button type="button" className="signin-inline" onClick={signInExisting} disabled={signingIn}>
+                        {signingIn ? 'Opening Google…' : 'Sign in with that Gmail to see your ticket'}
+                      </button>
+                    ) : null
+                  }
+                />
+              </CssTicket>
             </div>
 
-            <div className={`hint${progress < 0.06 ? ' show' : ''}`} aria-hidden="true">
+            <div className={`ct-hint${progress < 0.05 ? ' show' : ''}`} aria-hidden="true">
               <span className="hint-arrow">⌄</span>
               <span>Scroll to open your ticket</span>
-            </div>
-
-            <div className={`ticket-face${formVisible || phase === 'submitting' ? ' show' : ''}`}>
-              <h1 className="display">
-                {EVENT.name}
-                <small>{EVENT.chapter}</small>
-              </h1>
-              <p className="meta">
-                {EVENT.dateLabel} · {EVENT.session} · {EVENT.venueShort} · Free
-              </p>
-              <TicketForm value={form} onChange={setForm} onSubmit={submit} disabled={phase === 'submitting'} serverError={serverError} />
-              {serverError?.includes('already has a ticket') && (
-                <button type="button" className="signin-inline" onClick={signInExisting} disabled={signingIn}>
-                  {signingIn ? 'Opening Google…' : 'Sign in with that Gmail to see your ticket'}
-                </button>
-              )}
             </div>
 
             {phase === 'dropping' && (
@@ -259,6 +272,7 @@ export default function App() {
           </div>
         </div>
       )}
+      {phase !== 'ticket' && <div style={{ height: spacer }} aria-hidden="true" />}
 
       {phase === 'ticket' && registration && (
         <main className="ticket-screen">

@@ -9,9 +9,11 @@ type Props = {
   onSubmit: () => void;
   disabled: boolean;
   serverError: string | null;
+  /** rendered under the server error, e.g. a sign-in shortcut for duplicate emails */
+  extra?: React.ReactNode;
 };
 
-export function TicketForm({ value, onChange, onSubmit, disabled, serverError }: Props) {
+export function TicketForm({ value, onChange, onSubmit, disabled, serverError, extra }: Props) {
   const [touched, setTouched] = useState<Partial<Record<Key, boolean>>>({});
   const [honeypot, setHoneypot] = useState('');
   const errors = useMemo(() => validateRegistration(value), [value]);
@@ -30,12 +32,12 @@ export function TicketForm({ value, onChange, onSubmit, disabled, serverError }:
   }
 
   return (
-    <form className="ticket-form" onSubmit={submit} noValidate>
+    <form className="ct-form" onSubmit={submit} noValidate>
       <input className="hp" tabIndex={-1} autoComplete="off" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} aria-hidden="true" />
 
       <label className={cls('name')}>
         <span>Full name</span>
-        <input value={value.name} onChange={(e) => set('name', e.target.value)} onBlur={() => touch('name')} autoComplete="name" disabled={disabled} />
+        <input value={value.name} onChange={(e) => set('name', e.target.value)} onBlur={() => touch('name')} autoComplete="name" placeholder="As it should appear on your ticket" disabled={disabled} />
         {err('name')}
       </label>
 
@@ -49,7 +51,7 @@ export function TicketForm({ value, onChange, onSubmit, disabled, serverError }:
         <label className={cls('department')}>
           <span>Department</span>
           <select value={value.department} onChange={(e) => set('department', e.target.value)} onBlur={() => touch('department')} disabled={disabled}>
-            <option value="">Choose…</option>
+            <option value="">Choose</option>
             {DEPARTMENTS.map((d) => (
               <option key={d}>{d}</option>
             ))}
@@ -59,7 +61,7 @@ export function TicketForm({ value, onChange, onSubmit, disabled, serverError }:
         <label className={cls('classYear')}>
           <span>Year</span>
           <select value={value.classYear} onChange={(e) => set('classYear', e.target.value)} onBlur={() => touch('classYear')} disabled={disabled}>
-            <option value="">Choose…</option>
+            <option value="">Choose</option>
             {CLASS_YEARS.map((y) => (
               <option key={y} value={y}>
                 {y} year
@@ -82,7 +84,7 @@ export function TicketForm({ value, onChange, onSubmit, disabled, serverError }:
         {err('githubUsername')}
       </label>
       <label className="check">
-        <input type="checkbox" checked={value.noGithubYet} onChange={(e) => set('noGithubYet', e.target.checked)} disabled={disabled} /> I’ll create one
+        <input type="checkbox" checked={value.noGithubYet} onChange={(e) => set('noGithubYet', e.target.checked)} disabled={disabled} /> I don’t have one yet, I’ll create it
       </label>
 
       <p className="bring">Bring your laptop + charger. Phones won’t work for this one.</p>
@@ -92,6 +94,7 @@ export function TicketForm({ value, onChange, onSubmit, disabled, serverError }:
           {serverError}
         </div>
       )}
+      {extra}
 
       <button className="punch" type="submit" disabled={disabled}>
         {disabled ? 'Punching…' : 'Punch my ticket'}

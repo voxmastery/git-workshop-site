@@ -47,97 +47,13 @@ button { font: inherit; cursor: pointer; }
 .signin-link:disabled { opacity: 0.7; cursor: wait; }
 .signin-corner .err { pointer-events: auto; background: rgba(43, 29, 79, 0.85); color: #ffb4a8; padding: 4px 10px; border-radius: 8px; max-width: 90vw; text-align: center; }
 
-/* Scroll track and sticky stage */
+/* Scroll track */
 .track { position: relative; }
-.stage {
-  position: sticky; top: 0; height: 100svh; overflow: hidden;
-  display: grid; place-items: center;
-}
-.frames {
-  height: 100svh; width: auto; max-width: 100vw; object-fit: contain;
-  aspect-ratio: 540 / 960;
-  transition: filter 0.4s ease;
-  /* feather the sides and bottom so the 9:16 column melts into the page */
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 18%, #000 82%, transparent 100%), linear-gradient(to bottom, #000 80%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0, #000 18%, #000 82%, transparent 100%), linear-gradient(to bottom, #000 80%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-}
-.stage.form-visible .frames, .stage.phase-submitting .frames { filter: brightness(0.75); }
-
-/* The ticket drops in on page load, whether or not the visitor scrolls */
-.frames-wrap { will-change: transform; }
-.frames-wrap.intro { animation: ticket-in 1.15s cubic-bezier(0.2, 0.9, 0.25, 1.25) both; }
-@keyframes ticket-in {
-  from { transform: translateY(-105vh); }
-  to { transform: translateY(0); }
-}
-
-.hint {
-  position: absolute; bottom: 24px; left: 0; right: 0; display: grid; justify-items: center; gap: 2px;
-  font-size: 0.8rem; letter-spacing: 1px; color: var(--cream); animation: bob 1.6s ease-in-out infinite;
-  opacity: 0; transition: opacity 0.4s ease 1.2s; pointer-events: none;
-}
-.hint.show { opacity: 1; }
 .hint-arrow { font-size: 1.6rem; line-height: 1; }
 @keyframes bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(6px) } }
 
-/* Write-in fields drawn directly on the open gold ticket (canvas is 540x960; the ticket face spans ≈ 24%–76% wide, 9%–91% tall) */
-.ticket-face {
-  --canvas-w: calc(100svh * 540 / 960);
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.98);
-  width: min(86vw, calc(var(--canvas-w) * 0.50)); height: min(84svh, 100svh * 0.80);
-  display: grid; align-content: center; gap: 2px; padding: 4px 2px;
-  color: #3b2a08; opacity: 0; pointer-events: none;
-  transition: opacity 0.5s ease 0.1s, transform 0.5s ease;
-}
-.ticket-face.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
-.ticket-face h1 { font-size: clamp(1.1rem, 2.6svh, 1.5rem); color: #3b2a08; letter-spacing: 1.5px; }
-.ticket-face h1 small { display: block; font-size: 0.62rem; letter-spacing: 3px; color: #7a5206; margin-top: 2px; }
-.ticket-face .meta { margin: 2px 0 6px; font-size: 0.6rem; line-height: 1.3; color: #5a3f0a; letter-spacing: 0.3px; }
-.stage.form-visible .frames, .stage.phase-submitting .frames { filter: none; }
-
-.ticket-form { display: grid; gap: 4px; }
-.ticket-form .field { display: grid; gap: 0; position: relative; font-size: 0.55rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #7a5206; }
-.ticket-form .field > span { line-height: 1; }
-.ticket-form .field input, .ticket-form .field select {
-  appearance: none; -webkit-appearance: none;
-  width: 100%; height: 30px; padding: 0 2px; margin: 0;
-  background: transparent; border: 0; border-bottom: 1.5px dotted rgba(90, 63, 10, 0.7); border-radius: 0;
-  color: #2a1c05; font-family: var(--font-mono); font-weight: 500; font-size: 15px; letter-spacing: 0.3px; text-transform: none;
-  caret-color: var(--orange);
-}
-.ticket-form .field input::placeholder { color: rgba(90, 63, 10, 0.45); font-family: var(--font-body); font-weight: 400; }
-.ticket-form .field input:focus, .ticket-form .field select:focus { outline: none; border-bottom-color: var(--orange); border-bottom-style: solid; }
-.ticket-form .field select { cursor: pointer; padding-right: 18px;
-  background-image: linear-gradient(45deg, transparent 50%, #7a5206 50%), linear-gradient(135deg, #7a5206 50%, transparent 50%);
-  background-position: calc(100% - 10px) 13px, calc(100% - 5px) 13px; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }
-.ticket-form .field select:invalid, .ticket-form .field select option[value=""] { color: rgba(90, 63, 10, 0.45); }
-.ticket-form .field.ok > span::after { content: ' ✓'; color: #1f7a45; letter-spacing: 0; }
-.ticket-form .field.bad input, .ticket-form .field.bad select { border-bottom-color: #a4231d; border-bottom-style: solid; }
-.ticket-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ticket-form .check { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 600; color: #5a3f0a; }
-.ticket-form .check input { accent-color: var(--orange); width: 14px; height: 14px; }
-.ticket-form .bring { margin: 4px 0 0; font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #7a5206; }
-.ticket-form .hp { position: absolute; left: -9999px; }
-.ticket-form .err { font-size: 0.62rem; letter-spacing: 0; text-transform: none; font-weight: 600; color: #a4231d; margin-top: 2px; }
-.punch {
-  justify-self: center; margin-top: 6px;
-  width: 88px; height: 88px; border-radius: 50%;
-  border: 3px double #2b1d4f; background: transparent; color: #2b1d4f;
-  font-family: var(--font-display); font-size: 1.05rem; letter-spacing: 2px; line-height: 1;
-  transform: rotate(-8deg); transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
-  box-shadow: none;
-}
-.punch:hover { background: #2b1d4f; color: var(--cream); transform: rotate(-8deg) scale(1.05); }
-.punch:active { transform: rotate(-8deg) scale(0.96); }
-.punch:disabled { opacity: 0.7; cursor: wait; }
-.signin-inline { margin-top: 6px; width: 100%; height: 34px; border-radius: 0; border: 0; border-bottom: 1.5px dotted #2b1d4f; background: transparent; color: #2b1d4f; font-weight: 700; font-size: 0.72rem; }
-.signin-inline:hover { border-bottom-style: solid; }
-@media (max-width: 480px) { .ticket-face { width: 84vw; } }
-
 /* Drop into the box */
-.drop-layer { position: absolute; inset: 0; background: var(--purple); }
+.drop-layer { position: absolute; inset: 0; background: var(--purple); z-index: 3; }
 .drop-video { width: 100%; height: 100%; object-fit: cover; }
 .flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 60%, rgba(246,217,184,0.95), transparent 60%); animation: flash 900ms ease-out forwards; }
 @keyframes flash { from { opacity: 1 } to { opacity: 0 } }
