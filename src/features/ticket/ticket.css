@@ -1,9 +1,9 @@
 /* ===== CSS carnival ticket (registration stage) ===== */
 .ct-stage {
-  position: sticky; top: 0; height: 100svh; overflow: visible;
-  display: grid; justify-items: center; align-items: start; padding-top: 64px; perspective: 1600px;
+  position: relative; min-height: 100svh;
+  display: grid; justify-items: center; align-content: start; padding: 72px 0 48px;
 }
-.ct-stage.phase-dropping { overflow: hidden; }
+.ct-stage.phase-dropping { position: fixed; inset: 0; padding: 0; overflow: hidden; z-index: 4; }
 .ct-wrap { will-change: transform; }
 .ct-wrap.intro { animation: ct-in 1.15s cubic-bezier(0.2, 0.9, 0.25, 1.25) both; }
 @keyframes ct-in { from { transform: translateY(-110vh) rotate(-2deg); } to { transform: translateY(0) rotate(0); } }
@@ -11,7 +11,7 @@
 .ct {
   --w: min(92vw, 420px);
   --notch: 11px;
-  width: var(--w); position: relative; transform-style: preserve-3d;
+  width: var(--w); position: relative;
   filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45));
 }
 
@@ -28,18 +28,8 @@
   -webkit-mask-composite: source-in; mask-composite: intersect;
 }
 .ct-top { border-radius: 18px 18px 0 0; display: grid; grid-template-columns: 84px 1fr; min-height: 172px; }
-.ct-bottom {
-  border-radius: 0 0 18px 18px; transform-origin: top center; transform-style: preserve-3d;
-  transition: transform 0.08s linear; will-change: transform;
-}
-.ct-face, .ct-back { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.ct-face { padding: 18px 20px 20px 20px; }
-.ct-back {
-  position: absolute; inset: 0; transform: rotateX(180deg); border-radius: 0 0 18px 18px;
-  display: grid; align-content: space-between; justify-items: center; padding: 22px 16px;
-  background: linear-gradient(180deg, #e3b03a, #cf9a25);
-}
-.ct-back-text { font-family: var(--font-display); font-size: 2rem; letter-spacing: 4px; color: rgba(59, 42, 8, 0.55); }
+.ct-bottom { border-radius: 0 0 18px 18px; }
+.ct-face { padding: 18px 20px 8px 20px; }
 
 .ct-perf {
   height: 0; border-top: 2px dashed rgba(80, 55, 8, 0.55); margin: 0 14px; position: relative; z-index: 2;
@@ -111,19 +101,9 @@
 .ct-form .signin-inline { margin-top: 2px; width: 100%; height: 40px; border-radius: 12px; border: 1.5px solid #2b1d4f; background: transparent; color: #2b1d4f; font-weight: 700; font-size: 0.85rem; }
 .ct-form .signin-inline:hover { background: rgba(43, 29, 79, 0.08); }
 
-.ct-stickers { display: flex; gap: 8px; }
+.ct-stickers { display: flex; gap: 8px; justify-content: center; padding: 0 0 18px; }
 .ct-stk { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 0.95rem; border: 2px solid rgba(255,255,255,0.85); box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
 
-/* dim + lock the form until the ticket is open */
-.ct-stage .ct-face { transition: opacity 0.3s ease; }
-.ct-stage:not(.open) .ct-face { pointer-events: none; }
-
-.ct-hint {
-  position: fixed; bottom: 20px; left: 0; right: 0; display: grid; justify-items: center; gap: 2px;
-  font-size: 0.8rem; letter-spacing: 1px; color: var(--cream); animation: bob 1.6s ease-in-out infinite;
-  opacity: 0; transition: opacity 0.4s ease 1.2s; pointer-events: none;
-}
-.ct-hint.show { opacity: 1; }
 
 @media (max-width: 380px) {
   .ct-top { grid-template-columns: 72px 1fr; }
@@ -132,5 +112,4 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .ct-wrap.intro { animation: none; }
-  .ct-bottom { transition: none; }
 }

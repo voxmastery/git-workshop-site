@@ -2,8 +2,6 @@ import { forwardRef, type ReactNode } from 'react';
 import { EVENT } from '../../data/event';
 
 type Props = {
-  /** 0 = folded shut, 1 = fully open */
-  openness: number;
   /** name typed so far, shown live on the stub */
   stubName: string;
   children: ReactNode;
@@ -20,11 +18,9 @@ const STICKERS: { key: string; glyph: string; bg: string; fg?: string }[] = [
 
 /**
  * A carnival ticket built entirely from DOM + CSS.
- * Top half: event header. Bottom half: the form. The bottom half is hinged at the perforation and
- * folds up behind the top half; `openness` drives the CSS 3D rotation.
+ * Top half: event header. Bottom half: the form, joined by a perforation.
  */
-export const CssTicket = forwardRef<HTMLDivElement, Props>(function CssTicket({ openness, stubName, children }, ref) {
-  const angle = -180 + 180 * Math.min(1, Math.max(0, openness));
+export const CssTicket = forwardRef<HTMLDivElement, Props>(function CssTicket({ stubName, children }, ref) {
   return (
     <div className="ct" ref={ref}>
       <div className="ct-half ct-top">
@@ -51,17 +47,14 @@ export const CssTicket = forwardRef<HTMLDivElement, Props>(function CssTicket({ 
 
       <div className="ct-perf" aria-hidden="true" />
 
-      <div className="ct-half ct-bottom" style={{ transform: `rotateX(${angle}deg)` }}>
+      <div className="ct-half ct-bottom">
         <div className="ct-face">{children}</div>
-        <div className="ct-back" aria-hidden="true">
-          <span className="ct-back-text">The First Commit</span>
-          <div className="ct-stickers">
-            {STICKERS.map((s) => (
-              <span key={s.key} className="ct-stk" style={{ background: s.bg, color: s.fg }}>
-                {s.glyph}
-              </span>
-            ))}
-          </div>
+        <div className="ct-stickers" aria-hidden="true">
+          {STICKERS.map((s) => (
+            <span key={s.key} className="ct-stk" style={{ background: s.bg, color: s.fg }}>
+              {s.glyph}
+            </span>
+          ))}
         </div>
       </div>
     </div>

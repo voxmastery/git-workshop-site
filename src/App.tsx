@@ -4,13 +4,9 @@ import { QrTicket } from './features/ticket/QrTicket';
 import { TicketForm } from './features/ticket/TicketForm';
 import { createAuth } from './lib/auth';
 import { createBackend, type Registration } from './lib/registrations';
-import { progressForRect } from './lib/scrub';
 import { EMPTY_REGISTRATION, type RegistrationInput } from './lib/validation';
 import './features/ticket/ticket.css';
 
-const OPEN_END = 0.55; // scroll progress at which the ticket is fully unfolded
-const FORM_AT = 0.6; // the form becomes usable a touch after it is open
-const SCRUB_EASE = 0.16;
 const DROP_NO_DATA_MS = 2500;
 const DROP_HARD_CAP_MS = 8000;
 
@@ -30,54 +26,8 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-/** Scroll progress of the track, eased per elapsed time so the fold glides at any frame rate. */
-function useSmoothScrollProgress(track: React.RefObject<HTMLDivElement | null>, reduced: boolean) {
-  const [progress, setProgress] = useState(0);
-  const target = useRef(0);
-  const current = useRef(0);
-
-  useEffect(() => {
-    const measure = () => {
-      const el = track.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      target.current = progressForRect(r.top, r.height, window.innerHeight);
-      if (document.visibilityState !== 'visible') {
-        current.current = target.current;
-        setProgress(target.current);
-      }
-    };
-    measure();
-    window.addEventListener('scroll', measure, { passive: true });
-    window.addEventListener('resize', measure);
-
-    let raf = 0;
-    let last = performance.now();
-    const tick = (now: number) => {
-      const dt = Math.min(100, now - last);
-      last = now;
-      const diff = target.current - current.current;
-      const k = 1 - Math.pow(1 - SCRUB_EASE, dt / 16.7);
-      if (reduced || Math.abs(diff) < 0.0008) current.current = target.current;
-      else current.current += diff * k;
-      setProgress((p) => (Math.abs(p - current.current) < 0.0004 ? p : current.current));
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => {
-      window.removeEventListener('scroll', measure);
-      window.removeEventListener('resize', measure);
-      cancelAnimationFrame(raf);
-    };
-  }, [track, reduced]);
-
-  return progress;
-}
-
 export default function App() {
   const reduced = usePrefersReducedMotion();
-  const track = useRef<HTMLDivElement>(null);
-  const progress = useSmoothScrollProgress(track, reduced);
   const [phase, setPhase] = useState<Phase>('scrub');
   const [form, setForm] = useState<RegistrationInput>(EMPTY_REGISTRATION);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -88,25 +38,6 @@ export default function App() {
   const dropVideo = useRef<HTMLVideoElement>(null);
   const [signingIn, setSigningIn] = useState(false);
   const [signInError, setSignInError] = useState<string | null>(null);
-  const ticketEl = useRef<HTMLDivElement>(null);
-  const [spacer, setSpacer] = useState(0);
-
-  // The ticket can be taller than the screen: once the fold is done and the sticky stage releases,
-  // this spacer lets the page keep scrolling until the bottom of the form is visible.
-  useEffect(() => {
-    const el = ticketEl.current;
-    if (!el) return;
-    const update = () => setSpacer(Math.max(0, el.getBoundingClientRect().height + 64 + 32 - window.innerHeight));
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    window.addEventListener('resize', update);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', update);
-    };
-  }, [phase]);
-
   // Returning visitor / OAuth redirect: show their saved ticket straight away.
   useEffect(() => {
     let alive = true;
@@ -150,9 +81,6 @@ export default function App() {
   useEffect(() => {
     if (phase === 'ticket') window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [phase]);
-
-  const openness = reduced ? 1 : Math.min(1, progress / OPEN_END);
-  const formOpen = reduced || progress >= FORM_AT;
 
   const submit = useCallback(async () => {
     setPhase('submitting');
@@ -228,15 +156,14 @@ export default function App() {
       )}
 
       {phase !== 'ticket' && (
-        <div className="track" ref={track} style={{ height: '200vh' }}>
-          <div className={`ct-stage phase-${phase}${formOpen ? ' open' : ''}`}>
+        <div className={`ct-stage phase-${phase}`}>
             <div className={`ct-wrap${reduced ? '' : ' intro'}`}>
-              <CssTicket ref={ticketEl} openness={openness} stubName={form.name.trim()}>
+              <CssTicket stubName={form.name.trim()}>
                 <TicketForm
                   value={form}
                   onChange={setForm}
                   onSubmit={submit}
-                  disabled={phase === 'submitting' || !formOpen}
+                  disabled={phase === 'submitting'}
                   serverError={serverError}
                   extra={
                     serverError?.includes('already has a ticket') ? (
@@ -247,11 +174,6 @@ export default function App() {
                   }
                 />
               </CssTicket>
-            </div>
-
-            <div className={`ct-hint${progress < 0.05 ? ' show' : ''}`} aria-hidden="true">
-              <span className="hint-arrow">⌄</span>
-              <span>Scroll to open your ticket</span>
             </div>
 
             {phase === 'dropping' && (
@@ -269,10 +191,8 @@ export default function App() {
                 )}
               </div>
             )}
-          </div>
         </div>
       )}
-      {phase !== 'ticket' && <div style={{ height: spacer }} aria-hidden="true" />}
 
       {phase === 'ticket' && registration && (
         <main className="ticket-screen">
