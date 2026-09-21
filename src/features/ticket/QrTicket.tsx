@@ -2,17 +2,7 @@ import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { EVENT } from '../../data/event';
 import type { Registration } from '../../lib/registrations';
-import { layoutForTicket } from '../../lib/ticketLayout';
 import { formatTicketNo } from '../../lib/validation';
-
-const STICKER_GLYPH: Record<string, string> = {
-  'pull-request': '⎇',
-  merge: '⇄',
-  fork: '⑂',
-  star: '★',
-  octocat: '🐱',
-  git: '◆',
-};
 
 type Props = {
   registration: Registration;
@@ -21,13 +11,18 @@ type Props = {
   saveError: string | null;
 };
 
+/**
+ * The student's ticket: the painted golden ticket (public/img/golden-ticket.webp, 2752x1536, tilted ≈ -3.9°)
+ * with their details written on the cream area and their real QR laid over the printed QR square.
+ * All positions are percentages of the image so it scales with the viewport.
+ */
 export function QrTicket({ registration, onSave, saving, saveError }: Props) {
   const [qr, setQr] = useState<string | null>(null);
-  const layout = layoutForTicket(registration.ticketNo);
+  const ticketNo = formatTicketNo(registration.ticketNo);
 
   useEffect(() => {
     let alive = true;
-    QRCode.toDataURL(registration.qrUrl, { margin: 1, width: 220, color: { dark: '#2b1d4f', light: '#f6d9b8' } })
+    QRCode.toDataURL(registration.qrUrl, { margin: 0, width: 360, errorCorrectionLevel: 'M', color: { dark: '#2b1d4f', light: '#ffffff' } })
       .then((url) => alive && setQr(url))
       .catch(() => alive && setQr(null));
     return () => {
@@ -38,46 +33,44 @@ export function QrTicket({ registration, onSave, saving, saveError }: Props) {
   const saved = Boolean(registration.savedToEmail);
 
   return (
-    <div className="qr-wrap">
-      <div className="qr-ticket" style={{ transform: `rotate(${layout.tilt}deg)` }} data-ticket={formatTicketNo(registration.ticketNo)}>
-        <div className="qr-stub" style={{ background: layout.stubColour }}>
-          <div className="day">{EVENT.dateDay}</div>
-          <div className="mon">{EVENT.dateMonth}</div>
-          <div className="no">{formatTicketNo(registration.ticketNo)}</div>
+    <div className="gt-wrap">
+      <div className="gt" data-ticket={ticketNo} role="img" aria-label={`Ticket ${ticketNo} for ${registration.name}`}>
+        <picture>
+          <source srcSet="/img/golden-ticket.webp" type="image/webp" />
+          <img className="gt-img" src="/img/golden-ticket.png" alt="" draggable={false} />
+        </picture>
+
+        {/* red stub */}
+        <div className="gt-stub">
+          <span className="gt-day">{EVENT.dateDay}</span>
+          <span className="gt-mon">{EVENT.dateMonth}</span>
+          <span className="gt-no">{ticketNo}</span>
         </div>
-        <div className="qr-body">
-          <p className="kicker">{EVENT.name} · {EVENT.chapter}</p>
-          <h2 className="display">{registration.name}</h2>
-          <p className="meta">
+
+        {/* cream area, left of the QR */}
+        <div className="gt-text">
+          <span className="gt-kicker">
+            {EVENT.name} · {EVENT.chapter}
+          </span>
+          <span className="gt-name">{registration.name}</span>
+          <span className="gt-line">
             {registration.department} · {registration.classYear} year
-          </p>
-          <p className="meta">
+            {registration.githubUsername ? ` · @${registration.githubUsername}` : ''}
+          </span>
+          <span className="gt-line">
             {EVENT.dateLabel} · {EVENT.session}
-            <br />
-            {EVENT.venue}
-          </p>
-          <div className="qr-row">
-            {qr ? <img src={qr} alt={`QR code for ticket ${formatTicketNo(registration.ticketNo)}`} width={110} height={110} /> : <div className="qr-ph" />}
-            <div className="qr-note">
-              Show this at the door.
-              <br />
-              <strong>Bring your laptop + charger.</strong>
-            </div>
-          </div>
-          <div className="stickers" aria-hidden="true">
-            {layout.stickers.map((s, i) => (
-              <span key={i} className={`stk stk-${s}`}>
-                {STICKER_GLYPH[s]}
-              </span>
-            ))}
-          </div>
+          </span>
+          <span className="gt-line gt-venue">{EVENT.venue}</span>
         </div>
+
+        {/* real QR over the printed one */}
+        <div className="gt-qr">{qr && <img src={qr} alt="" draggable={false} />}</div>
       </div>
 
       <div className="save-box">
         {saved ? (
           <p className="saved">
-            Saved to <strong>{registration.savedToEmail}</strong>. Open this page signed in and your ticket is here.
+            Saved to <strong>{registration.savedToEmail}</strong>. Open this page signed in and your ticket is here. Show the QR at the door.
           </p>
         ) : (
           <>

@@ -44,16 +44,26 @@ function useSmoothScrollProgress(track: React.RefObject<HTMLDivElement | null>, 
       if (!el) return;
       const r = el.getBoundingClientRect();
       target.current = progressForRect(r.top, r.height, window.innerHeight);
+      // Background tabs get no animation frames: snap so the state never falls behind the scroll.
+      if (document.visibilityState !== 'visible') {
+        current.current = target.current;
+        setProgress(target.current);
+      }
     };
     measure();
     window.addEventListener('scroll', measure, { passive: true });
     window.addEventListener('resize', measure);
 
     let raf = 0;
-    const tick = () => {
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(100, now - last); // ms since last frame, capped so a stalled tab does not jump
+      last = now;
       const diff = target.current - current.current;
+      // frame-rate independent easing: same feel at 30, 60 or 120 fps
+      const k = 1 - Math.pow(1 - SCRUB_EASE, dt / 16.7);
       if (reduced || Math.abs(diff) < 0.0008) current.current = target.current;
-      else current.current += diff * SCRUB_EASE;
+      else current.current += diff * k;
       setProgress((p) => (Math.abs(p - current.current) < 0.0004 ? p : current.current));
       raf = requestAnimationFrame(tick);
     };
@@ -190,14 +200,10 @@ export default function App() {
 
   return (
     <div className="app">
-      <a className="brand" href="https://github.com/voxmastery/git-workshop-site" target="_blank" rel="noreferrer">
-        {EVENT.kicker}
-      </a>
-
       {phase !== 'ticket' && (
         <div className="signin-corner">
           <button type="button" className="signin-link" onClick={signInExisting} disabled={signingIn}>
-            {signingIn ? 'Opening Google…' : 'Already have a ticket? Sign in'}
+            {signingIn ? 'Opening Google…' : 'Sign in'}
           </button>
           {signInError && (
             <span className="err" role="alert">
