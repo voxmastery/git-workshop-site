@@ -1,15 +1,16 @@
 /* ===== CSS carnival ticket (registration stage) ===== */
 .ct-stage {
-  position: relative; min-height: 100svh;
-  display: grid; justify-items: center; align-content: start; padding: 72px 0 48px;
+  position: fixed; inset: 0; overflow: hidden;
+  display: grid; place-items: center; padding: 10px 6px;
 }
+.ct-fit { transform-origin: center center; will-change: transform; }
 .ct-stage.phase-dropping { position: fixed; inset: 0; padding: 0; overflow: hidden; z-index: 4; }
 .ct-wrap { will-change: transform; }
 .ct-wrap.intro { animation: ct-in 1.15s cubic-bezier(0.2, 0.9, 0.25, 1.25) both; }
 @keyframes ct-in { from { transform: translateY(-110vh) rotate(-2deg); } to { transform: translateY(0) rotate(0); } }
 
 .ct {
-  --w: min(92vw, 420px);
+  --w: min(94vw, 430px);
   --notch: 11px;
   width: var(--w); position: relative;
   filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45));
@@ -27,9 +28,9 @@
         radial-gradient(circle var(--notch) at 100% 50%, transparent 98%, #000) 0 0 / 100% 44px repeat-y;
   -webkit-mask-composite: source-in; mask-composite: intersect;
 }
-.ct-top { border-radius: 18px 18px 0 0; display: grid; grid-template-columns: 84px 1fr; min-height: 172px; }
+.ct-top { border-radius: 18px 18px 0 0; display: grid; grid-template-columns: 78px 1fr; }
 .ct-bottom { border-radius: 0 0 18px 18px; }
-.ct-face { padding: 18px 20px 8px 20px; }
+.ct-face { padding: 12px 16px 6px 16px; }
 
 .ct-perf {
   height: 0; border-top: 2px dashed rgba(80, 55, 8, 0.55); margin: 0 14px; position: relative; z-index: 2;
@@ -40,12 +41,12 @@
   background: var(--orange); color: #fff; display: grid; align-content: center; justify-items: center; gap: 0;
   padding: 12px 6px; text-align: center; border-right: 2px dashed rgba(255, 255, 255, 0.55);
 }
-.ct-day { font-family: var(--font-display); font-size: 2.9rem; line-height: 0.9; }
+.ct-day { font-family: var(--font-display); font-size: 2.5rem; line-height: 0.9; }
 .ct-mon { font-family: var(--font-display); letter-spacing: 3px; font-size: 1rem; }
 .ct-who { margin-top: 10px; font-size: 0.58rem; font-weight: 800; letter-spacing: 1px; line-height: 1.2; max-width: 72px; word-break: break-word; }
-.ct-head { padding: 16px 18px 14px; display: grid; align-content: center; gap: 4px; color: #3b2a08; }
+.ct-head { padding: 10px 14px 10px; display: grid; align-content: center; gap: 3px; color: #3b2a08; }
 .ct-kicker { font-size: 0.6rem; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #7a5206; }
-.ct-title { font-family: var(--font-display); font-size: 2.1rem; line-height: 0.92; letter-spacing: 1.5px; margin: 2px 0 0; text-transform: uppercase; color: #2b1d4f; }
+.ct-title { font-family: var(--font-display); font-size: 1.8rem; line-height: 0.92; letter-spacing: 1.5px; margin: 2px 0 0; text-transform: uppercase; color: #2b1d4f; }
 .ct-chapter { font-family: var(--font-display); font-size: 0.95rem; letter-spacing: 3px; color: #a4231d; }
 .ct-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .ct-chips span {
@@ -55,12 +56,12 @@
 .ct-chips .ct-free { background: #2b1d4f; color: var(--cream); border-color: #2b1d4f; }
 
 /* form on the bottom half */
-.ct-form { display: grid; gap: 10px; }
-.ct-form .field { display: grid; gap: 5px; position: relative; }
+.ct-form { display: grid; gap: 7px; }
+.ct-form .field { display: grid; gap: 3px; position: relative; }
 .ct-form .field > span { font-size: 0.66rem; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #6b4a08; }
 .ct-form .field input, .ct-form .field select {
   appearance: none; -webkit-appearance: none;
-  height: 46px; width: 100%; padding: 0 14px; margin: 0;
+  height: 40px; width: 100%; padding: 0 12px; margin: 0;
   background: #fff7e6; color: #2b1d4f; border: 1.5px solid rgba(120, 82, 10, 0.35); border-radius: 12px;
   font: inherit; font-size: 16px; font-weight: 500;
   box-shadow: inset 0 1px 2px rgba(80, 55, 8, 0.12);
@@ -72,26 +73,23 @@
 }
 .ct-form .field select { cursor: pointer; padding-right: 36px;
   background-image: linear-gradient(45deg, transparent 50%, #6b4a08 50%), linear-gradient(135deg, #6b4a08 50%, transparent 50%);
-  background-position: calc(100% - 20px) 20px, calc(100% - 14px) 20px; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; }
+  background-position: calc(100% - 18px) 17px, calc(100% - 12px) 17px; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; }
 .ct-form .field.ok input, .ct-form .field.ok select { border-color: #1f9d55; }
 .ct-form .field.ok::after {
-  content: '✓'; position: absolute; right: 12px; top: 33px; width: 20px; height: 20px; border-radius: 50%;
+  content: '✓'; position: absolute; right: 10px; top: 25px; width: 20px; height: 20px; border-radius: 50%;
   background: var(--green); color: #143d26; font-size: 13px; font-weight: 900; display: grid; place-items: center;
   pointer-events: none;
 }
 .ct-form .field.ok select ~ * { display: none; }
 .ct-form .field.bad input, .ct-form .field.bad select { border-color: #c0392b; background: #fff3f1; }
 .ct-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ct-form .check { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: #3b2a08; margin-top: -4px; }
+.ct-form .check { display: flex; align-items: center; gap: 8px; font-size: 0.76rem; font-weight: 600; color: #3b2a08; margin-top: -2px; }
 .ct-form .check input { accent-color: var(--orange); width: 16px; height: 16px; }
-.ct-form .bring {
-  margin: 2px 0 0; padding: 8px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; color: #3b2a08;
-  background: rgba(255, 255, 255, 0.45); border: 1px dashed rgba(120, 82, 10, 0.45);
-}
+.ct-form .bring { margin: 0; font-size: 0.66rem; font-weight: 700; color: #6b4a08; letter-spacing: 0.3px; }
 .ct-form .hp { position: absolute; left: -9999px; }
 .ct-form .err { font-size: 0.72rem; font-weight: 600; color: #a4231d; }
 .ct-form .punch {
-  margin-top: 4px; height: 50px; width: 100%; border: 0; border-radius: 14px;
+  margin-top: 2px; height: 46px; width: 100%; border: 0; border-radius: 12px;
   background: var(--orange); color: #fff; font-weight: 800; font-size: 1rem; letter-spacing: 0.4px;
   box-shadow: 0 10px 22px rgba(240, 80, 51, 0.38); transition: transform 0.15s ease, background 0.15s ease;
 }
@@ -101,15 +99,16 @@
 .ct-form .signin-inline { margin-top: 2px; width: 100%; height: 40px; border-radius: 12px; border: 1.5px solid #2b1d4f; background: transparent; color: #2b1d4f; font-weight: 700; font-size: 0.85rem; }
 .ct-form .signin-inline:hover { background: rgba(43, 29, 79, 0.08); }
 
-.ct-stickers { display: flex; gap: 8px; justify-content: center; padding: 0 0 18px; }
-.ct-stk { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 0.95rem; border: 2px solid rgba(255,255,255,0.85); box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+.ct-stickers { display: flex; gap: 8px; justify-content: center; padding: 0 0 12px; }
+.ct-stk { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 0.95rem; border: 2px solid rgba(255,255,255,0.85); box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
 
 
-@media (max-width: 380px) {
-  .ct-top { grid-template-columns: 72px 1fr; }
-  .ct-title { font-size: 1.8rem; }
-  .ct-face { padding: 16px 14px 18px; }
-}
+/* done screen */
+.done-screen { position: fixed; inset: 0; display: grid; place-items: center; padding: 20px; overflow: hidden; }
+.done-card { position: relative; z-index: 1; text-align: center; display: grid; gap: 14px; max-width: 420px; justify-items: center; }
+.done-card h1 { font-size: clamp(2.4rem, 9vw, 4rem); color: var(--cream); }
+.done-card p { margin: 0; color: #e6dcf5; font-size: 0.95rem; }
+.gt-top-line { text-align: center; }
 @media (prefers-reduced-motion: reduce) {
   .ct-wrap.intro { animation: none; }
 }
