@@ -100,7 +100,8 @@
 .ct-form .signin-inline:hover { background: rgba(43, 29, 79, 0.08); }
 
 .ct-stickers { display: flex; gap: 8px; justify-content: center; padding: 0 0 12px; }
-.ct-stk { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 0.95rem; border: 2px solid rgba(255,255,255,0.85); box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+.ct-stk { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+.ct-stk svg { display: block; }
 
 
 /* done screen */

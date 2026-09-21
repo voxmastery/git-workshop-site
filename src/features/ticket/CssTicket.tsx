@@ -1,5 +1,6 @@
 import { forwardRef, type ReactNode } from 'react';
 import { EVENT } from '../../data/event';
+import { Octicon, type IconName } from './Octicon';
 
 type Props = {
   /** name typed so far, shown live on the stub */
@@ -7,13 +8,13 @@ type Props = {
   children: ReactNode;
 };
 
-const STICKERS: { key: string; glyph: string; bg: string; fg?: string }[] = [
-  { key: 'pr', glyph: '⎇', bg: '#ffffff', fg: '#111' },
-  { key: 'merge', glyph: '⇄', bg: '#8957e5', fg: '#fff' },
-  { key: 'fork', glyph: '⑂', bg: '#2f81f7', fg: '#fff' },
-  { key: 'star', glyph: '★', bg: '#ffffff', fg: '#f2c14e' },
-  { key: 'cat', glyph: '🐱', bg: '#111', fg: '#fff' },
-  { key: 'git', glyph: '◆', bg: '#f05033', fg: '#fff' },
+const STICKERS: { name: IconName; bg: string; fg: string }[] = [
+  { name: 'pull-request', bg: '#ffffff', fg: '#24292f' },
+  { name: 'merge', bg: '#8957e5', fg: '#ffffff' },
+  { name: 'fork', bg: '#2f81f7', fg: '#ffffff' },
+  { name: 'star', bg: '#ffffff', fg: '#f2c14e' },
+  { name: 'github', bg: '#24292f', fg: '#ffffff' },
+  { name: 'git', bg: '#ffffff', fg: '#f05033' },
 ];
 
 /**
@@ -51,8 +52,8 @@ export const CssTicket = forwardRef<HTMLDivElement, Props>(function CssTicket({ 
         <div className="ct-face">{children}</div>
         <div className="ct-stickers" aria-hidden="true">
           {STICKERS.map((s) => (
-            <span key={s.key} className="ct-stk" style={{ background: s.bg, color: s.fg }}>
-              {s.glyph}
+            <span key={s.name} className="ct-stk" style={{ background: s.bg, color: s.fg }}>
+              <Octicon name={s.name} size={14} />
             </span>
           ))}
         </div>
