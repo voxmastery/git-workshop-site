@@ -60,10 +60,12 @@ export class SupabaseAuth implements AuthService {
     return { email: u.email.toLowerCase(), name: (u.user_metadata?.full_name as string | undefined) ?? null };
   }
   async signInWithGoogle(hintEmail?: string): Promise<AuthUser | null> {
-    await this.client.auth.signInWithOAuth({
+    const { data, error } = await this.client.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${location.origin}/`, queryParams: hintEmail ? { login_hint: hintEmail } : undefined },
     });
+    if (error) throw new Error(`Google sign-in could not start: ${error.message}`);
+    if (data?.url) location.assign(data.url); // belt and braces: supabase-js normally redirects itself
     return null; // page redirects
   }
   async signOut() {

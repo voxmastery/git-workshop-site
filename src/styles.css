@@ -40,6 +40,23 @@ button { font: inherit; cursor: pointer; }
   color: var(--lavender); text-decoration: none; text-transform: uppercase;
 }
 
+.signin-corner {
+  position: fixed; top: calc(env(safe-area-inset-top, 0px) + 40px); left: 0; right: 0; z-index: 5;
+  display: grid; justify-items: center; gap: 4px; pointer-events: none;
+}
+.signin-link {
+  pointer-events: auto; background: rgba(43, 29, 79, 0.75); color: var(--cream); border: 1px solid var(--lilac);
+  border-radius: 999px; padding: 7px 14px; font-size: 0.78rem; font-weight: 600; backdrop-filter: blur(6px);
+}
+.signin-link:hover { background: var(--lilac); }
+.signin-link:disabled { opacity: 0.7; cursor: wait; }
+.signin-corner .err { pointer-events: auto; background: rgba(43, 29, 79, 0.85); color: #ffb4a8; padding: 4px 10px; border-radius: 8px; max-width: 90vw; text-align: center; }
+.signin-inline {
+  margin-top: 8px; width: 100%; height: 42px; border-radius: 10px; border: 1.5px solid var(--deep); background: transparent;
+  color: var(--deep); font-weight: 700;
+}
+.signin-inline:hover { background: rgba(43, 29, 79, 0.08); }
+
 /* Scroll track and sticky stage */
 .track { position: relative; }
 .stage {

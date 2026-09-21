@@ -140,6 +140,30 @@ export default function App() {
     }
   }, [form, reduced]);
 
+  /** Landing-page sign-in for people who already have a ticket (new device, cleared session). */
+  const [signingIn, setSigningIn] = useState(false);
+  const [signInError, setSignInError] = useState<string | null>(null);
+  const signInExisting = useCallback(async () => {
+    setSigningIn(true);
+    setSignInError(null);
+    try {
+      const user = await auth.signInWithGoogle();
+      if (!user) return; // real OAuth redirects; the mount effect loads the ticket on return
+      const mine = await backend.mine(user.email);
+      if (!mine) {
+        setSignInError(`No ticket is registered to ${user.email}. Scroll down and punch one.`);
+        await auth.signOut();
+        return;
+      }
+      setRegistration(mine.savedToEmail ? mine : await backend.claim(user.email));
+      setPhase('ticket');
+    } catch {
+      setSignInError('Sign-in did not go through. Please try again.');
+    } finally {
+      setSigningIn(false);
+    }
+  }, []);
+
   const save = useCallback(async () => {
     if (!registration) return;
     setSaving(true);
@@ -171,6 +195,19 @@ export default function App() {
       </a>
 
       {phase !== 'ticket' && (
+        <div className="signin-corner">
+          <button type="button" className="signin-link" onClick={signInExisting} disabled={signingIn}>
+            {signingIn ? 'Opening Google…' : 'Already have a ticket? Sign in'}
+          </button>
+          {signInError && (
+            <span className="err" role="alert">
+              {signInError}
+            </span>
+          )}
+        </div>
+      )}
+
+      {phase !== 'ticket' && (
         <div className="track" ref={track} style={{ height: '300vh' }}>
           <div className={`stage phase-${phase}${formVisible ? ' form-visible' : ''}`}>
             <div className={`frames-wrap${reduced ? '' : ' intro'}`}>
@@ -191,6 +228,11 @@ export default function App() {
                 {EVENT.dateLabel} · {EVENT.session} · {EVENT.venueShort} · Free
               </p>
               <TicketForm value={form} onChange={setForm} onSubmit={submit} disabled={phase === 'submitting'} serverError={serverError} />
+              {serverError?.includes('already has a ticket') && (
+                <button type="button" className="signin-inline" onClick={signInExisting} disabled={signingIn}>
+                  {signingIn ? 'Opening Google…' : 'Sign in with that Gmail to see your ticket'}
+                </button>
+              )}
             </div>
 
             {phase === 'dropping' && (
