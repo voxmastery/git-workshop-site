@@ -8,7 +8,6 @@ export type RegistrationInput = {
   phone: string;
   githubUsername: string;
   noGithubYet: boolean;
-  laptop: boolean | null;
 };
 
 export type FieldErrors = Partial<Record<keyof RegistrationInput, string>>;
@@ -21,7 +20,6 @@ export const EMPTY_REGISTRATION: RegistrationInput = {
   phone: '',
   githubUsername: '',
   noGithubYet: false,
-  laptop: null,
 };
 
 export function normaliseEmail(email: string): string {
@@ -46,7 +44,6 @@ export function validateRegistration(input: RegistrationInput): FieldErrors {
     errors.githubUsername = 'That doesn’t look like a GitHub username.';
   }
 
-  if (input.laptop === null) errors.laptop = 'Tell us if you’re bringing a laptop.';
   return errors;
 }
 

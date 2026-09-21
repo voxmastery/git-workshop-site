@@ -1,32 +1,26 @@
-# React + TypeScript + Vite
+# Git & GitHub Workshop — ticket site
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Single-screen registration for the Cynergy Coding Club workshop (RUAS, 22 Sep 2026).
 
-Currently, two official plugins are available:
+- A gold carnival ticket drops in on load; scrolling scrubs it open (frames from a Kling 3.0 clip drawn on a canvas).
+- The form sits on the open ticket. "Punch my ticket" registers, the ticket drops into the lottery box, and the visitor's own QR ticket appears.
+- "Continue with Google to save it" binds the ticket to the Gmail they registered with; returning signed-in visitors land straight on their ticket.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Live: https://git-workshop-site.vercel.app
 
-## React Compiler
+## Run
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev -- --port 5199   # mock backend until .env has Supabase values
+npm test
+npm run build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Backend
+
+Without `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` the app uses an in-browser mock (tickets in localStorage, sign-in simulated). See **SETUP.md** for the Supabase project, Edge Functions (`register`, `claim`), migration, Google OAuth and Vercel env vars.
+
+## Assets
+
+`public/video/*.mp4|webm` and `public/frames/ticket/*.webp` were generated in Higgsfield (Kling 3.0 + Nano Banana 2); prompts are in `video/README.md` (not committed) and `docs/`.

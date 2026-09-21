@@ -8,7 +8,6 @@ const valid = {
   department: 'CSE',
   classYear: '2nd',
   phone: '9876543210',
-  laptop: true,
 };
 
 describe('validateRegistration', () => {
@@ -23,10 +22,6 @@ describe('validateRegistration', () => {
   it('requires a 10 digit phone', () => {
     expect(validateRegistration({ ...valid, phone: '12345' }).phone).toBeDefined();
     expect(validateRegistration({ ...valid, phone: '98765 43210' }).phone).toBeUndefined();
-  });
-
-  it('requires the laptop answer', () => {
-    expect(validateRegistration({ ...valid, laptop: null }).laptop).toBeDefined();
   });
 
   it('ignores the github username when the student has none yet', () => {
